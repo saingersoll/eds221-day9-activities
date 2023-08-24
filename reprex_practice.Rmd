@@ -33,16 +33,38 @@ Identify what is causing the problem in the code below (there's only one thing).
 
 ```{r}
 # Example 1: 
-mack_creek_lengths <- mack_creek_vertebrates %>% 
+wrong_mack_creek_lengths <- mack_creek_vertebrates %>% 
   clean_names() %>% 
   select(year:sampledate) %>% 
   filter(section == "CC") %>% 
-  mutate(across(where(is.character, tolower))) %>% 
+  # tolower is not necessary because the df was already processed using clean_names, therefore the names are all in snake_case.
   drop_na(species) %>% 
   group_by(species) %>% 
   summarize(mean_length_cm = mean(length1, na.rm = TRUE),
             sd_length_cm = sd(length1, na.rm = TRUE)) %>% 
   ungroup()
+```
+ 
+ FULL FIX
+```{r}
+mack_creek_lengths <- mack_creek_vertebrates %>% 
+  clean_names() %>% 
+  select(year:sampledate) %>% 
+  filter(section == "CC") %>%  
+  mutate(across(where(is.character), tolower)) %>%
+  drop_na(species) %>% 
+  group_by(species) %>% 
+  summarize(mean_length_cm = mean(length1, na.rm = TRUE),
+            sd_length_cm = sd(length1, na.rm = TRUE)) %>% 
+  ungroup()
+```
+REPREX 1
+```{r}
+mack_creek_lengths <- mack_creek_vertebrates %>% 
+  clean_names() %>% 
+  select(year:sampledate) %>% 
+  filter(section == "CC") %>%  
+  mutate(across(where(is.character), tolower)) %>%
 ```
 
 ### reprex 2
@@ -51,6 +73,17 @@ Identify what is causing the problem in the code below (there's only one thing).
 
 ```{r}
 # Example 2:
+mack_creek_vertebrates %>% 
+  clean_names() %>% 
+  filter(species == "ONCL") %>% 
+  ggplot(aes(x = length1, y = weight)) +
+         geom_point(shape = 12, color = "purple") +
+         theme_minimal() +
+         labs(x = "Cutthroat trout length (cm)",
+              y = "Weight (g)")
+```
+
+```{r}
 mack_creek_vertebrates %>% 
   clean_names() %>% 
   filter(species == "ONCL") %>% 
